@@ -8,7 +8,9 @@ public class Seats {
 
     }
 
+    public void selectSeat() {
 
+    }
 
     public void setStatus(){
 
