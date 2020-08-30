@@ -42,8 +42,12 @@ public class CinemaHall {
         this.movie = movie;
     }
 
-    public void setSeats(Seat[][] seats) {
-        this.seats = seats;
+    public void reserveSeat(int row, int column) {
+        this.seats[--row][--column].setFree(false);
+    }
+
+    public void releaseSeat(int row, int column) {
+        this.seats[--row][--column].setFree(true);
     }
 
     public void printSeats() {
