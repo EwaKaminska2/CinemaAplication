@@ -8,5 +8,9 @@ public class MainTemp {
         cinemaHall.reserveSeat(3,4);
 
         cinemaHall.printSeats();
+
+        // working fine
+        Movie movie = new Movie("zootopia");
+        movie.showInfo();
     }
 }

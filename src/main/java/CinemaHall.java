@@ -3,7 +3,7 @@ public class CinemaHall {
     private int id;
     private final int rows;
     private final int columns;
-    private Seat[][] seats;
+    private final Seat[][] seats;
     private Movie movie;
 
     public CinemaHall(int rows, int columns) {
@@ -52,19 +52,29 @@ public class CinemaHall {
 
     public void printSeats() {
         // printing screen
-        for (int i = 0; i < columns; i++) {
+        System.out.print("  "); // space before screen
+        for (int i = 0; i < columns * 2 - 1; i++) {
             System.out.print("-");
         }
         System.out.println("\n");
+        // printing numbers of seats
+        System.out.print("  "); // space before numbers
+        for (int i = 1; i <= columns; i++) {
+            System.out.print(i + " ");
+        }
+        System.out.println();
         // printing seats
         // F - free, X - taken
+        char letter = 'A';
         for (Seat[] row : seats) {
+            System.out.print(letter++ + " ");
             for (Seat col : row) {
                 if (col.isFree()) {
                     System.out.print("F");
                 } else {
                     System.out.print("X");
                 }
+                System.out.print(" ");
             }
             System.out.println();
         }
