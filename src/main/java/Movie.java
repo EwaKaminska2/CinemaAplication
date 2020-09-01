@@ -1,46 +1,65 @@
 import com.google.gson.Gson;
+import domain.BaseEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.validation.constraints.Min;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class Movie {
+@Entity
+@Table(name = "MOVIE")
+public class Movie extends BaseEntity {
 
+    @Column(nullable = false)
     private final String title;
-    private String director;
-    private String type;
-    private int year;
-    private String runtime;
-    private String actors;
-    private String plot;
+
+    @Column(nullable = false)
+    private final String director;
+
+    @Column(nullable = false)
+    private final String type;
+
+    @Column(nullable = false)
+    private final int year;
+
+    @Column(nullable = false)
+    @Min(1)
+    private final String runtime;
+
+    @Column(nullable = false)
+    private final String actors;
+
+    @Column(length = 1000, nullable = false)
+    private final String plot;
 
     public Movie(String title) {
         this.title = title;
-        setParameters();
+        Movie tempMovie = setParametersToTemp();
+        this.director = tempMovie.director;
+        this.type = tempMovie.type;
+        this.year = tempMovie.year;
+        this.runtime = tempMovie.runtime;
+        this.actors = tempMovie.actors;
+        this.plot = tempMovie.plot;
     }
 
-
-    // zmienic zeby w setParams nie tworzyło nowego obiektu tylko do tego samego
-    
-
-
-    public void setParameters() {
+    private Movie setParametersToTemp() {
         String response = getResponse()
                 .replace("Title", "title")
-                .replace("Director","director")
-                .replace("Year","year")
-                .replace("Genre","type")
-                .replace("Runtime","runtime")
-                .replace("Actors","actors")
-                .replace("Plot","plot");
-        Movie test = new Gson().fromJson(response, Movie.class);
-    }
+                .replace("Director", "director")
+                .replace("Year", "year")
+                .replace("Genre", "type")
+                .replace("Runtime", "runtime")
+                .replace("Actors", "actors")
+                .replace("Plot", "plot");
+        return new Gson().fromJson(response, Movie.class);
 
-    public void showInfo(){
-        System.out.println(this);
     }
 
     private String getResponse() {
@@ -74,6 +93,10 @@ public class Movie {
         return "";
     }
 
+    public void showInfo() {
+        System.out.println(this);
+    }
+
     @Override
     public String toString() {
         return "Movie{" +
@@ -87,3 +110,5 @@ public class Movie {
                 '}';
     }
 }
+
+
