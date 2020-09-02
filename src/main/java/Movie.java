@@ -65,7 +65,7 @@ public class Movie extends BaseEntity {
     private String getResponse() {
         String apiKey = "21eb6951&";
         String apiPath = "http://www.omdbapi.com/?apikey=";
-        String url = apiPath + apiKey + "t=" + title;
+        String url = apiPath + apiKey + "t=" + title.replace(' ','-');
         return request(url);
     }
 
@@ -91,6 +91,11 @@ public class Movie extends BaseEntity {
             e.printStackTrace();
         }
         return "";
+    }
+
+    @Override
+    public int getId() {
+        return super.getId();
     }
 
     public void showInfo() {

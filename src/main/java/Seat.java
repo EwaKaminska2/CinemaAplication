@@ -19,6 +19,11 @@ public class Seat {
         return isFree;
     }
 
-
-
+    @Override
+    public String toString() {
+        return "Seat{" +
+                "isVIP=" + isVIP +
+                ", isFree=" + isFree +
+                '}';
+    }
 }
