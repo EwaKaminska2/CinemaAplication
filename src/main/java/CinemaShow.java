@@ -17,10 +17,14 @@ public class CinemaShow extends BaseEntity {
     @Column(name = "movie_time")
     private String movieTime;
 
-    public CinemaShow(CinemaHall cinemaHall, Movie movie, String movieTime) {
-        this.cinemaHall = cinemaHall;
+    @Transient
+    private final CinemaHallSchedule cinemaHallSchedule;
+
+    public CinemaShow(CinemaHallSchedule cinemaHallSchedule, Movie movie) {
+        this.cinemaHall = cinemaHallSchedule.getCinemaHall();
         this.movie = movie;
-        this.movieTime = movieTime;
+        this.movieTime = cinemaHallSchedule.getMovieHour();
+        this.cinemaHallSchedule = cinemaHallSchedule;
     }
 
     @Override
@@ -50,6 +54,10 @@ public class CinemaShow extends BaseEntity {
 
     public void setMovieTime(String movieTime) {
         this.movieTime = movieTime;
+    }
+
+    public CinemaHallSchedule getCinemaHallSchedule() {
+        return cinemaHallSchedule;
     }
 
     @Override

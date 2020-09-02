@@ -30,7 +30,7 @@ public class HibernateUtil {
 
     public Object findById(int id) {
         Query query = session.createNamedQuery("findById", aClass);
-        query.setParameter(1,id);
+        query.setParameter(1, id);
         return query.getSingleResult();
     }
 

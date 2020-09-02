@@ -1,8 +1,10 @@
 import domain.BaseEntity;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.Min;
-import java.time.LocalTime;
 import java.util.Arrays;
 
 @Entity
@@ -10,32 +12,41 @@ import java.util.Arrays;
 public class CinemaHall extends BaseEntity {
 
     @Column
-    @Min(1)
-    private final int seatRows;
-
-    @Column
-    @Min(1)
-    private final int seatColumns;
+    private final String size;
 
     @Transient
-    private final Seat[][] seats;
+    private final int seatRows;
 
-//    @ManyToOne
-//    @JoinColumn(name = "movie_id")
-//    private Movie movie;
+    @Transient
+    private final int seatColumns;
 
-//    @Column
-//    private String movieTime;
+//    @Transient
+//    private final Seat[][] seats;
 
-    public CinemaHall(int rows, int columns) {
-        this.seatRows = rows;
-        this.seatColumns = columns;
-        this.seats = new Seat[rows][columns];
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                seats[i][j] = new Seat();
-            }
+    public CinemaHall(String size) {
+        this.size = size;
+        switch (size) {
+            case "small":
+                seatRows=5;
+                seatColumns=10;
+                break;
+            case "medium":
+                seatRows=8;
+                seatColumns=15;
+                break;
+            case "big":
+                seatRows=10;
+                seatColumns=20;
+                break;
+            default:
+                throw new IllegalArgumentException();
         }
+//        this.seats = new Seat[seatRows][seatColumns];
+//        for (int i = 0; i < seatRows; i++) {
+//            for (int j = 0; j < seatColumns; j++) {
+//                seats[i][j] = new Seat();
+//            }
+//        }
     }
 
     @Override
@@ -51,81 +62,65 @@ public class CinemaHall extends BaseEntity {
         return seatColumns;
     }
 
-    public Seat[][] getSeats() {
-        return seats;
-    }
-
-//    public Movie getMovie() {
-//        return movie;
+//    public Seat[][] getSeats() {
+//        return seats;
 //    }
 
-//    public void setMovie(Movie movie) {
-//        this.movie = movie;
+//    public void reserveSeat(char row, int column) {
+//        this.seats[(int) row - 65][--column].setFree(false);
+//    }
+//
+//    public void releaseSeat(char row, int column) {
+//        this.seats[(int) row - 65][--column].setFree(true);
 //    }
 
-//    public String getMovieTime() {
-//        return movieTime;
+//    void printSeats() {
+//        // printing screen
+//        System.out.print("  "); // space before screen
+//        for (int i = 0; i < seatColumns - 1; i++) {
+//            System.out.print("---");
+//        }
+//        System.out.print("-\n\n");
+//        // printing numbers of seats
+//        for (int i = 1; i <= seatColumns; i++) {
+//            System.out.printf("%3d", i);
+//            //System.out.print(i + "  ");
+//        }
+//        System.out.println();
+//        // printing seats
+//        // F - free, X - taken
+//        char letter = 'A';
+//        for (Seat[] row : seats) {
+//            System.out.print(letter++ + " ");
+//            for (Seat col : row) {
+//                if (col.isFree()) {
+//                    System.out.print("F");
+//                } else {
+//                    System.out.print("X");
+//                }
+//                System.out.print("  ");
+//            }
+//            System.out.println();
+//        }
 //    }
-
-//    public void setMovieTime(String movieTime) {
-//        this.movieTime = movieTime;
+//
+//    private boolean isFull() {
+//        for (Seat[] row : seats) {
+//            for (Seat col : row) {
+//                if (col.isFree()) {
+//                    return false;
+//                }
+//            }
+//        }
+//        return true;
 //    }
-
-    public void reserveSeat(char row, int column) {
-        this.seats[(int) row - 65][--column].setFree(false);
-    }
-
-    public void releaseSeat(char row, int column) {
-        this.seats[(int) row - 65][--column].setFree(true);
-    }
-
-    void printSeats() {
-        // printing screen
-        System.out.print("  "); // space before screen
-        for (int i = 0; i < seatColumns - 1; i++) {
-            System.out.print("---");
-        }
-        System.out.print("-\n\n");
-        // printing numbers of seats
-        for (int i = 1; i <= seatColumns; i++) {
-            System.out.printf("%3d",i);
-            //System.out.print(i + "  ");
-        }
-        System.out.println();
-        // printing seats
-        // F - free, X - taken
-        char letter = 'A';
-        for (Seat[] row : seats) {
-            System.out.print(letter++ + " ");
-            for (Seat col : row) {
-                if (col.isFree()) {
-                    System.out.print("F");
-                } else {
-                    System.out.print("X");
-                }
-                System.out.print("  ");
-            }
-            System.out.println();
-        }
-    }
-
-    private boolean isFull() {
-        for (Seat[] row : seats) {
-            for (Seat col : row) {
-                if (col.isFree()) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 
     @Override
     public String toString() {
         return "CinemaHall{" +
-                "seatRows=" + seatRows +
+                "size='" + size + '\'' +
+                ", seatRows=" + seatRows +
                 ", seatColumns=" + seatColumns +
-                ", seats=" + Arrays.toString(seats) +
                 '}';
     }
 }

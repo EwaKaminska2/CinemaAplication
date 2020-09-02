@@ -49,6 +49,10 @@ public class Movie extends BaseEntity {
         this.plot = tempMovie.plot;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     private Movie setParametersToTemp() {
         String response = getResponse()
                 .replace("Title", "title")
@@ -65,7 +69,7 @@ public class Movie extends BaseEntity {
     private String getResponse() {
         String apiKey = "21eb6951&";
         String apiPath = "http://www.omdbapi.com/?apikey=";
-        String url = apiPath + apiKey + "t=" + title.replace(' ','-');
+        String url = apiPath + apiKey + "t=" + title.replace(' ', '-');
         return request(url);
     }
 
