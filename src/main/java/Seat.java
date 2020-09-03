@@ -16,4 +16,6 @@ public class Seat {
                 ", isFree=" + isFree +
                 '}';
     }
+
+
 }

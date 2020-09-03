@@ -17,7 +17,7 @@ public class HibernateUtil {
         this.aClass = aClass;
     }
 
-    public List<Object> findAll() {
+    public List findAll() {
         return session.createQuery("From " + aClass.getName(), aClass).getResultList();
     }
 
@@ -28,6 +28,21 @@ public class HibernateUtil {
         }
     }
 
+    public void update() {
+        EntityTransaction transaction = null;
+        try {
+            transaction = session.getTransaction();
+            if (!transaction.isActive()) {
+                transaction.begin();
+            }
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+        }
+    }
+
     public Object findById(int id) {
         Query query = session.createNamedQuery("findById", aClass);
         query.setParameter(1, id);
@@ -35,6 +50,11 @@ public class HibernateUtil {
     }
 
     public void create(Object objectToCreate) {
+        List list = findAll();
+        if (list.contains(objectToCreate)) {
+            return;
+        }
+
         EntityTransaction transaction = null;
         try {
             transaction = session.getTransaction();

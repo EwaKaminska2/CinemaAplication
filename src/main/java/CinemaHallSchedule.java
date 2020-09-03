@@ -26,17 +26,9 @@ public class CinemaHallSchedule {
         return cinemaHall;
     }
 
-    public boolean reserveSeat(char row, int column) {
+    public boolean bookSeat(char row, int column) {
         if (seats[(int) row - 65][--column].isFree()) {
             seats[(int) row - 65][column].setFree(false);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean releaseSeat(char row, int column) {
-        if (!seats[(int) row - 65][--column].isFree()) {
-            seats[(int) row - 65][column].setFree(true);
             return true;
         }
         return false;

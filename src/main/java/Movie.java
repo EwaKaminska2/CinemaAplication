@@ -11,32 +11,36 @@ import javax.validation.constraints.Min;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Objects;
 
 @Entity
 @Table(name = "MOVIE")
 public class Movie extends BaseEntity {
 
     @Column(nullable = false)
-    private final String title;
+    private  String title;
 
     @Column(nullable = false)
-    private final String director;
+    private  String director;
 
     @Column(nullable = false)
-    private final String type;
+    private  String type;
 
     @Column(nullable = false)
-    private final int year;
+    private  int year;
 
     @Column(nullable = false)
     @Min(1)
-    private final String runtime;
+    private  String runtime;
 
     @Column(nullable = false)
-    private final String actors;
+    private  String actors;
 
     @Column(length = 1000, nullable = false)
-    private final String plot;
+    private  String plot;
+
+    public Movie() {
+    }
 
     public Movie(String title) {
         this.title = title;
@@ -117,6 +121,25 @@ public class Movie extends BaseEntity {
                 ", actors='" + actors + '\'' +
                 ", plot='" + plot + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Movie movie = (Movie) o;
+        return year == movie.year &&
+                Objects.equals(title, movie.title) &&
+                Objects.equals(director, movie.director) &&
+                Objects.equals(type, movie.type) &&
+                Objects.equals(runtime, movie.runtime) &&
+                Objects.equals(actors, movie.actors) &&
+                Objects.equals(plot, movie.plot);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, director, type, year, runtime, actors, plot);
     }
 }
 

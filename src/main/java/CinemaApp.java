@@ -12,20 +12,17 @@ public class CinemaApp {
 
         // beginning of hibernate app
         SessionFactory sessionFactory = createSessionFactory();
+
         HibernateUtil movieDao = new HibernateUtil(sessionFactory.createEntityManager(), Movie.class);
         HibernateUtil cinemaHallDao = new HibernateUtil(sessionFactory.createEntityManager(), CinemaHall.class);
         HibernateUtil filmShowDao = new HibernateUtil(sessionFactory.createEntityManager(), CinemaShow.class);
+        HibernateUtil clientDao = new HibernateUtil(sessionFactory.createEntityManager(), Client.class);
+        HibernateUtil paymentsHistoryDao = new HibernateUtil(sessionFactory.createEntityManager(), PaymentsHistory.class);
 
         Movie movie1 = new Movie("zootopia");
         Movie movie2 = new Movie("wonder woman");
         Movie movie3 = new Movie("black widow");
         Movie movie4 = new Movie("once upon a time in hollywood");
-
-        List<Movie> movies = new LinkedList<>();
-        movies.add(movie1);
-        movies.add(movie2);
-        movies.add(movie3);
-        movies.add(movie4);
 
         CinemaHall smallCinemaHall = new CinemaHall("small");
         CinemaHall mediumCinemaHall = new CinemaHall("medium");
@@ -51,17 +48,10 @@ public class CinemaApp {
         CinemaShow cinemaShow8 = new CinemaShow(cinemaHallSchedule8, movie2);
         CinemaShow cinemaShow9 = new CinemaShow(cinemaHallSchedule9, movie3);
 
-        List<CinemaShow> cinemaShowList = new LinkedList<>();
-        cinemaShowList.add(cinemaShow1);
-        cinemaShowList.add(cinemaShow2);
-        cinemaShowList.add(cinemaShow3);
-        cinemaShowList.add(cinemaShow4);
-        cinemaShowList.add(cinemaShow5);
-        cinemaShowList.add(cinemaShow6);
-        cinemaShowList.add(cinemaShow7);
-        cinemaShowList.add(cinemaShow8);
-        cinemaShowList.add(cinemaShow9);
+        Client client1 = new Client("Adam", "Kowalski", "adam.kowalski@gmail.com", "adamkowalski");
+        Client client2 = new Client("Marek", "Nowak", "marek.nowak@gmail.com", "mareknowak");
 
+        // DAO
         movieDao.create(movie1);
         movieDao.create(movie2);
         movieDao.create(movie3);
@@ -81,21 +71,30 @@ public class CinemaApp {
         filmShowDao.create(cinemaShow8);
         filmShowDao.create(cinemaShow9);
 
-        cinemaHallDao.close();
-        movieDao.close();
-        sessionFactory.close();
+        clientDao.create(client1);
+        clientDao.create(client2);
+
+        List<Movie> movies = movieDao.findAll();
+        List<CinemaShow> cinemaShowList = filmShowDao.findAll();
+        List<Client> clients = clientDao.findAll();
+
         // end of hibernate app
 
         // main sequence
         Scanner scanner = new Scanner(System.in);
         int step;
+        Client loggedClient = null;
         System.out.println("Welcome to the best cinema!");
 
         do {
             System.out.println("What would you like to do?");
             System.out.println("1. Buy tickets");
             System.out.println("2. Show movies info");
-            System.out.println("3. Cancel your reservation");
+            System.out.println("3. Sign in");
+            System.out.println("4. Sign up");
+            System.out.println("5. Check history of payments");
+            System.out.println("6. Add money to your account");
+            System.out.println("7. Log out");
             System.out.println("Exit");
             step = scanner.nextInt();
             switch (step) {
@@ -111,9 +110,9 @@ public class CinemaApp {
                     List<Integer> showsId = showMovieHours(cinemaShowList, movieId);
                     CinemaShow chosenShow = cinemaShowList.get(showsId.get(scanner.nextInt() - 1) - 1);
                     // if chosen movie has full cinema hall
-                    if (chosenShow.getCinemaHallSchedule().isFull()) {
-                        System.out.println("Sorry, cinema hall is full");
-                    } else {
+                    //if (chosenShow.getCinemaHallSchedule().isFull()) {
+                    //    System.out.println("Sorry, cinema hall is full");
+                    //} else {
                         // choose number of tickets
                         System.out.println("Choose number of tickets");
                         int numberOfTickets = scanner.nextInt();
@@ -138,19 +137,28 @@ public class CinemaApp {
                         chosenShow.getCinemaHallSchedule().printSeats();
                         System.out.println("First type row, then enter, then type column");
                         int reservedSeats = 0;
-                         while (reservedSeats < numberOfTickets) {
+                        while (reservedSeats < numberOfTickets) {
                             scanner.nextLine();
                             char row = scanner.nextLine().toUpperCase().charAt(0);
                             int col = scanner.nextInt();
-                            if (chosenShow.getCinemaHallSchedule().reserveSeat(row,col)) {
+                            if (chosenShow.getCinemaHallSchedule().bookSeat(row, col)) {
                                 reservedSeats++;
                             } else {
                                 System.out.println("Seat already taken");
                             }
                         }
-                         // pay
+                        // pay
                         int bill = calculateBill(normalTickets, reducedTickets);
-                        System.out.println("Thank you, the amount to pay is: " + bill);
+                        if (loggedClient != null) {
+                            if (loggedClient.getAccountBalance() - bill < 0) {
+                                System.out.println("Sorry, you don't have enough money on your account");
+                                System.out.println("Amount to pay at cinema checkout is : " + bill);
+                            } else {
+                                loggedClient.pay(bill);
+                                clientDao.update();
+                                paymentsHistoryDao.create(new PaymentsHistory(loggedClient, -bill));
+                            }
+                       // }
                     }
                     break;
                 case 2:
@@ -158,16 +166,83 @@ public class CinemaApp {
                     for (Movie movie : movies) {
                         movie.showInfo();
                     }
+                    System.out.println();
                     break;
                 case 3:
-                    // cancel reservation
+                    // sign in
+                    System.out.println("Type your email:");
+                    scanner.nextLine();
+                    String email = scanner.nextLine();
+                    System.out.println("Type your password:");
+                    String password = scanner.nextLine();
+                    for (Client client : clients) {
+                        if (client.getEmail().equals(email) && client.getPassword().equals(password)) {
+                            loggedClient = client;
+                            System.out.println("Hello " + loggedClient.getName());
+                        }
+                    }
+                    if (loggedClient == null) {
+                        System.out.println("Sorry, you are not in our data base, please sign up");
+                    }
+
+
+                    break;
+                case 4:
+                    // sign up
+                    break;
+                case 5:
+                    // check history of payments
+                    if (loggedClient != null) {
+                        List<PaymentsHistory> paymentsHistoryList = paymentsHistoryDao.findAll();
+                        for (PaymentsHistory paymentsHistory : paymentsHistoryList) {
+                            if (paymentsHistory.getId() == loggedClient.getId()) {
+                                System.out.println(paymentsHistory);
+                            }
+                        }
+                    } else {
+                        System.out.println("Sorry, you are not logged in");
+                    }
+                    System.out.println();
+                    break;
+                case 6:
+                    // add money to account
+                    if (loggedClient != null) {
+                        System.out.println("How much money you want to deposit?");
+                        int amount = scanner.nextInt();
+                        loggedClient.addMoney(amount);
+                        clientDao.update();
+                        paymentsHistoryDao.create(new PaymentsHistory(loggedClient, amount));
+                        System.out.println("Current balance = " + loggedClient.getAccountBalance());
+                    } else {
+                        System.out.println("Sorry, you are not logged in");
+                    }
+                    break;
+                case 7:
+                    // log out
+                    loggedClient = null;
                     break;
                 default:
                     System.out.println("Bye, bye");
             }
-        } while (step > 0 && step <= 3);
+        } while (step > 0 && step <= 6);
 
+        close(sessionFactory, movieDao, cinemaHallDao, filmShowDao, clientDao, paymentsHistoryDao);
     }
+
+    private static void close(SessionFactory sessionFactory, HibernateUtil... hibernateUtils) {
+        for (HibernateUtil hibernateUtil : hibernateUtils) {
+            hibernateUtil.close();
+        }
+        sessionFactory.close();
+    }
+
+//    private static SessionFactory createSessionFactory(Class<?>... objects) {
+//        Configuration configuration = new Configuration().configure("hibernate.cfg.xml");
+//        for (Object object : objects) {
+//            configuration.addAnnotatedClass(object.getClass());
+//        }
+//        return configuration.buildSessionFactory();
+//    }
 
     private static SessionFactory createSessionFactory() {
         return new Configuration()
@@ -175,6 +250,8 @@ public class CinemaApp {
                 .addAnnotatedClass(Movie.class)
                 .addAnnotatedClass(CinemaHall.class)
                 .addAnnotatedClass(CinemaShow.class)
+                .addAnnotatedClass(Client.class)
+                .addAnnotatedClass(PaymentsHistory.class)
                 .buildSessionFactory();
     }
 

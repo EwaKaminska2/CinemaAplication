@@ -1,6 +1,7 @@
 import domain.BaseEntity;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "CINEMA_SHOW")
@@ -18,7 +19,10 @@ public class CinemaShow extends BaseEntity {
     private String movieTime;
 
     @Transient
-    private final CinemaHallSchedule cinemaHallSchedule;
+    private  CinemaHallSchedule cinemaHallSchedule;
+
+    public CinemaShow() {
+    }
 
     public CinemaShow(CinemaHallSchedule cinemaHallSchedule, Movie movie) {
         this.cinemaHall = cinemaHallSchedule.getCinemaHall();
@@ -62,10 +66,26 @@ public class CinemaShow extends BaseEntity {
 
     @Override
     public String toString() {
-        return "Seans{" +
+        return "CinemaShow{" +
                 "cinemaHall=" + cinemaHall +
                 ", movie=" + movie +
                 ", movieTime='" + movieTime + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CinemaShow that = (CinemaShow) o;
+        return Objects.equals(cinemaHall, that.cinemaHall) &&
+                Objects.equals(movie, that.movie) &&
+                Objects.equals(movieTime, that.movieTime) &&
+                Objects.equals(cinemaHallSchedule, that.cinemaHallSchedule);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(cinemaHall, movie, movieTime, cinemaHallSchedule);
     }
 }
