@@ -25,10 +25,10 @@ public class CinemaShow extends BaseEntity {
     }
 
     public CinemaShow(CinemaHallSchedule cinemaHallSchedule, Movie movie) {
-        this.cinemaHall = cinemaHallSchedule.getCinemaHall();
-        this.movie = movie;
-        this.movieTime = cinemaHallSchedule.getMovieHour();
         this.cinemaHallSchedule = cinemaHallSchedule;
+        this.movie = movie;
+        cinemaHall = cinemaHallSchedule.getCinemaHall();
+        movieTime = cinemaHallSchedule.getMovieHour();
     }
 
     @Override
@@ -70,6 +70,7 @@ public class CinemaShow extends BaseEntity {
                 "cinemaHall=" + cinemaHall +
                 ", movie=" + movie +
                 ", movieTime='" + movieTime + '\'' +
+                ", cinemaHallSchedule=" + cinemaHallSchedule +
                 '}';
     }
 

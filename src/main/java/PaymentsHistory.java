@@ -21,11 +21,14 @@ public class PaymentsHistory extends BaseEntity {
     public PaymentsHistory() {
     }
 
+    public int getClientId() {
+        return client.getId();
+    }
+
     @Override
     public String toString() {
         return "PaymentsHistory{" +
-                "client=" + client +
-                ", amount=" + amount +
+                "amount=" + amount +
                 '}';
     }
 }

@@ -10,8 +10,7 @@ public class CinemaHallSchedule {
         this.movieHour = movieHour;
         this.cinemaHall = cinemaHall;
         this.seats = new Seat[cinemaHall.getSeatRows()][cinemaHall.getSeatColumns()];
-        for (int i = 0;
-             i < cinemaHall.getSeatRows(); i++) {
+        for (int i = 0; i < cinemaHall.getSeatRows(); i++) {
             for (int j = 0; j < cinemaHall.getSeatColumns(); j++) {
                 seats[i][j] = new Seat();
             }
@@ -73,5 +72,13 @@ public class CinemaHallSchedule {
             }
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "CinemaHallSchedule{" +
+                "movieHour='" + movieHour + '\'' +
+                ", cinemaHall=" + cinemaHall +
+                '}';
     }
 }

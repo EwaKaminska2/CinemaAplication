@@ -84,12 +84,11 @@ public class Client extends BaseEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Client client = (Client) o;
-        return Objects.equals(email, client.email) &&
-                Objects.equals(password, client.password);
+        return email.equals(client.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email, password);
+        return Objects.hash(email);
     }
 }

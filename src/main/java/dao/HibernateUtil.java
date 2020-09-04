@@ -1,5 +1,6 @@
 package dao;
 
+import domain.BaseEntity;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
@@ -54,7 +55,6 @@ public class HibernateUtil {
         if (list.contains(objectToCreate)) {
             return;
         }
-
         EntityTransaction transaction = null;
         try {
             transaction = session.getTransaction();

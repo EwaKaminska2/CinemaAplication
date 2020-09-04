@@ -2,6 +2,7 @@ import dao.HibernateUtil;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
+import java.util.InputMismatchException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -86,145 +87,195 @@ public class CinemaApp {
         Client loggedClient = null;
         System.out.println("Welcome to the best cinema!");
 
-        do {
-            System.out.println("What would you like to do?");
-            System.out.println("1. Buy tickets");
-            System.out.println("2. Show movies info");
-            System.out.println("3. Sign in");
-            System.out.println("4. Sign up");
-            System.out.println("5. Check history of payments");
-            System.out.println("6. Add money to your account");
-            System.out.println("7. Log out");
-            System.out.println("Exit");
-            step = scanner.nextInt();
-            switch (step) {
-                case 1:
-                    // buy tickets
+        try {
+            do {
+                System.out.println("What would you like to do?");
+                System.out.println("1. Buy tickets");
+                System.out.println("2. Show movies info");
+                System.out.println("3. Sign in");
+                System.out.println("4. Sign up");
+                System.out.println("5. Check account balance and history of payments");
+                System.out.println("6. Add money to your account");
+                System.out.println("7. Log out");
+                System.out.println("Exit");
+                step = scanner.nextInt();
+                switch (step) {
+                    case 1:
+                        // buy tickets
 
-                    // show titles
-                    System.out.println("Choose movie");
-                    showMovieTitles(movies);
-                    int movieId = scanner.nextInt();
-                    // show hours
-                    System.out.println("Choose hour of chosen movie");
-                    List<Integer> showsId = showMovieHours(cinemaShowList, movieId);
-                    CinemaShow chosenShow = cinemaShowList.get(showsId.get(scanner.nextInt() - 1) - 1);
-                    // if chosen movie has full cinema hall
-                    //if (chosenShow.getCinemaHallSchedule().isFull()) {
-                    //    System.out.println("Sorry, cinema hall is full");
-                    //} else {
-                        // choose number of tickets
-                        System.out.println("Choose number of tickets");
-                        int numberOfTickets = scanner.nextInt();
-                        // choose tickets type (normal, reduced)
-                        boolean ticketsQuantityOK;
-                        int normalTickets;
-                        int reducedTickets;
-                        do {
-                            System.out.println("Choose tickets type");
-                            System.out.println("Normal tickets quantity:");
-                            normalTickets = scanner.nextInt();
-                            System.out.println("Reduced tickets quantity:");
-                            reducedTickets = scanner.nextInt();
-                            ticketsQuantityOK = normalTickets + reducedTickets == numberOfTickets;
-                            if (!ticketsQuantityOK || normalTickets < 0 || reducedTickets < 0) {
-                                System.out.println("Wrong tickets quantity");
+                        // show titles
+                        System.out.println("Choose movie");
+                        showMovieTitles(movies);
+                        int movieId = scanner.nextInt();
+                        // show hours
+                        System.out.println("Choose hour of chosen movie");
+                        List<Integer> showsId = showMovieHours(cinemaShowList, movieId);
+                        CinemaShow chosenShow = cinemaShowList.get(showsId.get(scanner.nextInt() - 1) - 1);
+                        // if chosen movie has full cinema hall
+                        if (chosenShow.getCinemaHallSchedule().isFull()) {
+                            System.out.println("Sorry, cinema hall is full");
+                        } else {
+                            // choose number of tickets
+                            System.out.println("Choose number of tickets");
+                            int numberOfTickets = scanner.nextInt();
+                            // choose tickets type (normal, reduced)
+                            boolean ticketsQuantityOK;
+                            int normalTickets;
+                            int reducedTickets;
+                            do {
+                                System.out.println("Choose tickets type");
+                                System.out.println("Normal tickets quantity:");
+                                normalTickets = scanner.nextInt();
+                                System.out.println("Reduced tickets quantity:");
+                                reducedTickets = scanner.nextInt();
+                                ticketsQuantityOK = normalTickets + reducedTickets == numberOfTickets;
+                                if (!ticketsQuantityOK || normalTickets < 0 || reducedTickets < 0) {
+                                    System.out.println("Wrong tickets quantity");
+                                }
+                            } while (!ticketsQuantityOK);
+                            // choose seats
+                            System.out.println("Choose available seat on cinema hall");
+                            System.out.println("F - free seat, X - taken seat");
+                            chosenShow.getCinemaHallSchedule().printSeats();
+                            System.out.println("First type row, then enter, then type column");
+                            int reservedSeats = 0;
+                            while (reservedSeats < numberOfTickets) {
+                                scanner.nextLine();
+                                char row = scanner.nextLine().toUpperCase().charAt(0);
+                                int col = scanner.nextInt();
+                                if (chosenShow.getCinemaHallSchedule().bookSeat(row, col)) {
+                                    reservedSeats++;
+                                } else {
+                                    System.out.println("Seat already taken");
+                                }
                             }
-                        } while (!ticketsQuantityOK);
-                        // choose seats
-                        System.out.println("Choose available seat on cinema hall");
-                        System.out.println("F - free seat, X - taken seat");
-                        chosenShow.getCinemaHallSchedule().printSeats();
-                        System.out.println("First type row, then enter, then type column");
-                        int reservedSeats = 0;
-                        while (reservedSeats < numberOfTickets) {
-                            scanner.nextLine();
-                            char row = scanner.nextLine().toUpperCase().charAt(0);
-                            int col = scanner.nextInt();
-                            if (chosenShow.getCinemaHallSchedule().bookSeat(row, col)) {
-                                reservedSeats++;
+                            // pay
+                            int bill = calculateBill(normalTickets, reducedTickets);
+                            if (loggedClient != null) {
+                                if (loggedClient.getAccountBalance() - bill < 0) {
+                                    System.out.println("Sorry, you don't have enough money on your account");
+                                    System.out.println("Amount to pay at cinema checkout is : " + bill);
+                                } else {
+                                    loggedClient.pay(bill);
+                                    clientDao.update();
+                                    paymentsHistoryDao.create(new PaymentsHistory(loggedClient, -bill));
+                                    System.out.println("You just paid " + bill + " from your account");
+                                }
                             } else {
-                                System.out.println("Seat already taken");
-                            }
-                        }
-                        // pay
-                        int bill = calculateBill(normalTickets, reducedTickets);
-                        if (loggedClient != null) {
-                            if (loggedClient.getAccountBalance() - bill < 0) {
-                                System.out.println("Sorry, you don't have enough money on your account");
                                 System.out.println("Amount to pay at cinema checkout is : " + bill);
+                            }
+                        }
+                        System.out.println();
+                        break;
+                    case 2:
+                        // show movies
+                        for (Movie movie : movies) {
+                            movie.showInfo();
+                        }
+                        System.out.println();
+                        break;
+                    case 3:
+                        // sign in
+                        clients = clientDao.findAll();
+                        if (loggedClient != null) {
+                            System.out.println("You are already logged in, " + loggedClient.getName());
+                        } else {
+                            System.out.println("Type your email:");
+                            scanner.nextLine();
+                            String email = scanner.nextLine();
+                            System.out.println("Type your password:");
+                            String password = scanner.nextLine();
+                            for (Client client : clients) {
+                                if (client.getEmail().equals(email) && client.getPassword().equals(password)) {
+                                    loggedClient = client;
+                                    System.out.println("Hello " + loggedClient.getName());
+                                }
+                            }
+                            if (loggedClient == null) {
+                                System.out.println("Sorry, you are not in our data base, please sign up");
+                            }
+                        }
+                        System.out.println();
+                        break;
+                    case 4:
+                        // sign up
+                        if (loggedClient != null) {
+                            System.out.println("You already have an account");
+                        } else {
+                            System.out.println("Name: ");
+                            scanner.nextLine();
+                            String name = scanner.nextLine();
+                            System.out.println("Last name: ");
+                            String lastName = scanner.nextLine();
+                            System.out.println("E-mail: ");
+                            String email = scanner.nextLine();
+                            boolean passwordOK = false;
+                            String password;
+                            do {
+                                System.out.println("Password: ");
+                                password = scanner.nextLine();
+                                System.out.println("Repeat password: ");
+                                passwordOK = scanner.nextLine().equals(password);
+                                if (!passwordOK) {
+                                    System.out.println("Wrong password, try again");
+                                }
+                            } while (!passwordOK);
+                            // new client
+                            clients = clientDao.findAll();
+                            if (clients.contains(new Client(name, lastName, email, password))) {
+                                System.out.println("Sorry, this account already exists");
                             } else {
-                                loggedClient.pay(bill);
-                                clientDao.update();
-                                paymentsHistoryDao.create(new PaymentsHistory(loggedClient, -bill));
-                            }
-                       // }
-                    }
-                    break;
-                case 2:
-                    // show movies
-                    for (Movie movie : movies) {
-                        movie.showInfo();
-                    }
-                    System.out.println();
-                    break;
-                case 3:
-                    // sign in
-                    System.out.println("Type your email:");
-                    scanner.nextLine();
-                    String email = scanner.nextLine();
-                    System.out.println("Type your password:");
-                    String password = scanner.nextLine();
-                    for (Client client : clients) {
-                        if (client.getEmail().equals(email) && client.getPassword().equals(password)) {
-                            loggedClient = client;
-                            System.out.println("Hello " + loggedClient.getName());
-                        }
-                    }
-                    if (loggedClient == null) {
-                        System.out.println("Sorry, you are not in our data base, please sign up");
-                    }
-
-
-                    break;
-                case 4:
-                    // sign up
-                    break;
-                case 5:
-                    // check history of payments
-                    if (loggedClient != null) {
-                        List<PaymentsHistory> paymentsHistoryList = paymentsHistoryDao.findAll();
-                        for (PaymentsHistory paymentsHistory : paymentsHistoryList) {
-                            if (paymentsHistory.getId() == loggedClient.getId()) {
-                                System.out.println(paymentsHistory);
+                                clientDao.create(new Client(name, lastName, email, password));
+                                System.out.println("New account was created");
                             }
                         }
-                    } else {
-                        System.out.println("Sorry, you are not logged in");
-                    }
-                    System.out.println();
-                    break;
-                case 6:
-                    // add money to account
-                    if (loggedClient != null) {
-                        System.out.println("How much money you want to deposit?");
-                        int amount = scanner.nextInt();
-                        loggedClient.addMoney(amount);
-                        clientDao.update();
-                        paymentsHistoryDao.create(new PaymentsHistory(loggedClient, amount));
-                        System.out.println("Current balance = " + loggedClient.getAccountBalance());
-                    } else {
-                        System.out.println("Sorry, you are not logged in");
-                    }
-                    break;
-                case 7:
-                    // log out
-                    loggedClient = null;
-                    break;
-                default:
-                    System.out.println("Bye, bye");
-            }
-        } while (step > 0 && step <= 6);
+                        System.out.println();
+                        break;
+                    case 5:
+                        // check history of payments
+                        if (loggedClient != null) {
+                            System.out.println("Current account balance is: " + loggedClient.getAccountBalance());
+                            List<PaymentsHistory> paymentsHistoryList = paymentsHistoryDao.findAll();
+                            for (PaymentsHistory paymentsHistory : paymentsHistoryList) {
+                                if (paymentsHistory.getClientId() == loggedClient.getId()) {
+                                    System.out.println(paymentsHistory);
+                                }
+                            }
+                        } else {
+                            System.out.println("Sorry, you are not logged in");
+                        }
+                        System.out.println();
+                        break;
+                    case 6:
+                        // add money to account
+                        if (loggedClient != null) {
+                            System.out.println("How much money do you want to deposit?");
+                            int amount = scanner.nextInt();
+                            loggedClient.addMoney(amount);
+                            clientDao.update();
+                            paymentsHistoryDao.create(new PaymentsHistory(loggedClient, amount));
+                            System.out.println("Current balance = " + loggedClient.getAccountBalance());
+                        } else {
+                            System.out.println("Sorry, you are not logged in");
+                        }
+                        System.out.println();
+                        break;
+                    case 7:
+                        // log out
+                        if (loggedClient != null) {
+                            loggedClient = null;
+                            System.out.println("You are logged out\n");
+                        } else {
+                            System.out.println("First you have to be logged in");
+                        }
+                        System.out.println();
+                        break;
+                }
+            } while (step > 0 && step <= 7);
+        } catch (InputMismatchException exception) {}
+        finally {
+            System.out.println("Bye, bye");
+        }
 
         close(sessionFactory, movieDao, cinemaHallDao, filmShowDao, clientDao, paymentsHistoryDao);
     }
